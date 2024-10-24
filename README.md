@@ -1,6 +1,6 @@
-# AI Web Scraper
+# AI Scraper
 
-AI Web Scraper is a powerful tool that combines web scraping capabilities with AI-powered content parsing. It uses Streamlit for the user interface, Selenium for web scraping, and Ollama LLM for intelligent content extraction.
+AI Scraper is a powerful tool that combines web scraping capabilities with AI-powered content parsing. It uses Streamlit for the user interface, Selenium for web scraping, and Ollama LLM for intelligent content extraction.
 
 ## Features
 
