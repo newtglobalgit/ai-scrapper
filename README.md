@@ -19,8 +19,8 @@ AI Web Scraper is a powerful tool that combines web scraping capabilities with A
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/ai-web-scraper.git
-   cd ai-web-scraper
+   git clone https://github.com/newtglobalgit/ai-scraper.git
+   cd ai-scraper
    ```
 
 2. Create a virtual environment:
@@ -53,7 +53,7 @@ AI Web Scraper is a powerful tool that combines web scraping capabilities with A
    streamlit run main.py
    ```
 
-3. Open your web browser and navigate to the URL provided by Streamlit (usually `http://localhost:8501`).
+3. Open your web browser and navigate to the External URL provided by Streamlit.
 
 4. Enter a website URL in the input field and click "Scrape Website".
 
