@@ -1,81 +1,111 @@
 # AI Scraper
 
-AI Scraper is a powerful tool that combines web scraping capabilities with AI-powered content parsing. It uses Streamlit for the user interface, Selenium for web scraping, and Ollama LLM for intelligent content extraction.
+AI Scraper is a powerful tool that combines web scraping capabilities with AI-powered content parsing. It features a Streamlit interface, async web crawling, and intelligent content extraction powered by Ollama LLM.
 
 ## Features
 
-- Web scraping with Selenium and BeautifulSoup
-- Captcha solving integration
-- AI-powered content parsing using Ollama LLM
-- User-friendly interface with Streamlit
+- Simple and Advanced scraping modes
+- Asynchronous web crawling with aiohttp
+- AI-powered content extraction using Ollama LLM
+- Captcha solving integration with Scraping Browser
+- Configurable extraction strategies
+- User-friendly interface with animated components
+- Content chunking for efficient processing
 
 ## Prerequisites
 
 - Python 3.7+
-- [Ollama](https://ollama.ai/) installed and running
+- [Ollama](https://ollama.ai/) installed and running with `llama3.1` model
 - Access to a Scraping Browser remote WebDriver
+- Required Python packages (see Installation)
 
 ## Installation
 
 1. Clone the repository:
-   ```
+   ```bash
    git clone https://github.com/newtglobalgit/ai-scraper.git
    cd ai-scraper
    ```
 
 2. Create a virtual environment:
-   ```
+   ```bash
    python -m venv ai
    source ai/bin/activate  # On Windows, use `ai\Scripts\activate`
    ```
 
 3. Install the required packages:
-   ```
+   ```bash
    pip install -r requirements.txt
    ```
 
 4. Set up environment variables:
-   Create a `.env` file in the project root and add the following:
+   Create a `.env` file in the project root and add:
    ```
    SBR_WEBDRIVER=<Your Scraping Browser WebDriver URL>
    ```
 
 ## Usage
 
-1. Ensure Ollama is running with the `llama3.2` model loaded.
+1. Ensure Ollama is running with the `llama3.1` model loaded.
 
 2. Start the Streamlit app:
-   ```
-   bash run_streamlit_app.sh
-   ```
-   Or run directly with:
-   ```
+   ```bash
    streamlit run main.py
    ```
 
-3. Open your web browser and navigate to the External URL provided by Streamlit.
-
-4. Enter a website URL in the input field and click "Scrape Website".
-
-5. Once the content is scraped, you can view the DOM content in the expandable section.
-
-6. Enter a description of what you want to parse from the content and click "Parse Content".
-
-7. The AI will extract the requested information and display it on the page.
+3. Using the application:
+   - Choose between Simple and Advanced scraping modes
+   - Enter a website URL to scrape
+   - In Advanced mode, provide specific extraction instructions
+   - View the scraped content in the expandable section
+   - Provide parsing instructions for AI-powered content extraction
+   - Review the parsed results
 
 ## Project Structure
 
-- `main.py`: The main Streamlit application
-- `scrape.py`: Contains functions for web scraping and content cleaning
-- `parse.py`: Handles the AI-powered content parsing using Ollama
-- `requirements.txt`: List of Python dependencies
-- `run_streamlit_app.sh`: Shell script to run the Streamlit app
+- `main.py`: Streamlit application with UI components and main workflow
+- `scrape.py`: Handles web scraping, async crawling, and content processing
+  - `AsyncWebCrawler`: Asynchronous web crawling implementation
+  - `ScrapingResult`: Data class for crawling results
+  - Content processing utilities (cleaning, chunking)
+- `extraction_strategy.py`: Defines extraction strategy interface and LLM implementation
+  - `ExtractionStrategy`: Abstract base class for extraction strategies
+  - `LLMExtractionStrategy`: Ollama-based extraction implementation
+- `parse.py`: Manages AI-powered content parsing using Ollama LLM
+
+## Key Components
+
+### Extraction Strategy
+
+The system uses a flexible extraction strategy pattern:
+```python
+class ExtractionStrategy(ABC):
+    @abstractmethod
+    async def extract(self, content):
+        pass
+```
+
+### Async Web Crawler
+
+Asynchronous web crawling with context management:
+```python
+async with AsyncWebCrawler(verbose=True) as crawler:
+    result = await crawler.arun(url, extraction_strategy)
+```
+
+### Content Processing
+
+- DOM content extraction and cleaning
+- Content chunking for efficient processing
+- Captcha solving integration
+- Custom parsing with LLM
 
 ## Troubleshooting
 
-- If you encounter issues with the Scraping Browser, ensure the `SBR_WEBDRIVER` environment variable is correctly set.
-- Make sure Ollama is running and the `llama3.2` model is available.
-- Check the console output for any error messages or debugging information.
+- Verify the `SBR_WEBDRIVER` environment variable is correctly set
+- Ensure Ollama is running and the `llama3.1` model is available
+- Check console output for error messages and debugging information
+- For captcha-related issues, verify Scraping Browser configuration
 
 ## Contributing
 
