@@ -1,3 +1,4 @@
+aiohttp 
 streamlit 
 langchain 
 langchain_ollama
