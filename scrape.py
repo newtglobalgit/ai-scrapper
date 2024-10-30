@@ -1,39 +1,77 @@
-from selenium.webdriver import Remote, ChromeOptions
-from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
-import os
-import sys
 import aiohttp
 import asyncio
-
-load_dotenv()
-
-SBR_WEBDRIVER = os.getenv("SBR_WEBDRIVER")
+import random
 
 class AsyncWebCrawler:
     def __init__(self, verbose=False):
+"""
+Initialize the AsyncWebCrawler instance.
+
+Args:
+    verbose (bool): If True, enables verbose output for debugging. Defaults to False.
+
+Attributes:
+    headers (dict): HTTP headers to be used for the requests, including a User-Agent.
+"""
         self.verbose = verbose
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
         
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
+        """
+        Initialize the aiohttp session when entering the context manager.
+
+        Returns:
+            AsyncWebCrawler: The current instance.
+        """
+        self.session = aiohttp.ClientSession(headers=self.headers)
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Close the aiohttp session when exiting the context manager.
+
+        Args:
+            exc_type: The type of exception thrown, if any.
+            exc_val: The exception instance.
+            exc_tb: The traceback.
+        """
         await self.session.close()
         
-    async def arun(self, url, extraction_strategy=None, bypass_cache=False):
+    async def arun(self, url, extraction_strategy=None):
+        """
+        Asynchronously crawl the given URL and extract relevant content using the
+        given extraction strategy.
+
+        Args:
+            url (str): The URL to crawl.
+            extraction_strategy (ExtractionStrategy): An optional extraction strategy
+                to use for extracting content. If not provided, a default extraction
+                strategy is used.
+
+        Returns:
+            ScrapingResult: An instance containing the raw and extracted content.
+
+        Raises:
+            Exception: If there is an error crawling the URL.
+        """
         try:
             async with self.session.get(url) as response:
-                html = await response.text()
-                if extraction_strategy:
-                    extracted_content = await extraction_strategy.extract(html)
+                if response.status == 200:
+                    html = await response.text()
+                    if extraction_strategy:
+                        extracted_content = await extraction_strategy.extract(html)
+                    else:
+                        extracted_content = clean_body_content(extract_body_content(html))
+                    await asyncio.sleep(random.uniform(1, 3))
+                    return ScrapingResult(
+                        raw_content=html,
+                        extracted_content=extracted_content
+                    )
                 else:
-                    extracted_content = clean_body_content(extract_body_content(html))
-                return ScrapingResult(
-                    raw_content=html,
-                    extracted_content=extracted_content
-                )
+                    raise Exception(f"HTTP {response.status} error for URL: {url}")
         except Exception as e:
             if self.verbose:
                 print(f"Error crawling {url}: {str(e)}")
@@ -41,34 +79,32 @@ class AsyncWebCrawler:
 
 class ScrapingResult:
     def __init__(self, raw_content, extracted_content):
+        """
+        Initialize a ScrapingResult instance.
+
+        Args:
+            raw_content (str): The raw, unprocessed content from the crawled URL.
+            extracted_content (str): The extracted content from the crawled URL, using
+                the specified extraction strategy.
+
+        Attributes:
+            raw_content (str): The raw, unprocessed content from the crawled URL.
+            extracted_content (str): The extracted content from the crawled URL, using
+                the specified extraction strategy.
+        """
         self.raw_content = raw_content
         self.extracted_content = extracted_content
 
-def scrape_website(website):
-    if not SBR_WEBDRIVER:
-        raise ValueError("SBR_WEBDRIVER environment variable is not set.")
-    print("Connecting to Scraping Browser...")
-    sbr_connection = ChromiumRemoteConnection(SBR_WEBDRIVER, "goog", "chrome")
-    try:
-        with Remote(sbr_connection, options=ChromeOptions()) as driver:
-            driver.get(website)
-            print("Waiting for captcha to solve...")
-            solve_res = driver.execute(
-                "executeCdpCommand",
-                {
-                    "cmd": "Captcha.waitForSolve",
-                    "params": {"detectTimeout": 10000},
-                },
-            )
-            print("Captcha solve status:", solve_res["value"]["status"])
-            print("Navigated! Scraping page content...")
-            html = driver.page_source
-            return html
-    except Exception as e:
-        print(f"Error connecting to Scraping Browser: {str(e)}", file=sys.stderr)
-        raise
-
 def extract_body_content(html_content):
+    """
+    Extract the body content from the given HTML content.
+
+    Args:
+        html_content (str): The HTML content to extract the body from.
+
+    Returns:
+        str: The body content as a string, or an empty string if no body is found.
+    """
     soup = BeautifulSoup(html_content, "html.parser")
     body_content = soup.body
     if body_content:
@@ -76,16 +112,21 @@ def extract_body_content(html_content):
     return ""
 
 def clean_body_content(body_content):
-    soup = BeautifulSoup(body_content, "html.parser")
-    for script_or_style in soup(["script", "style"]):
-        script_or_style.extract()
-    cleaned_content = soup.get_text(separator="\n")
-    cleaned_content = "\n".join(
-        line.strip() for line in cleaned_content.splitlines() if line.strip()
-    )
-    return cleaned_content
+    """
+    Clean the given body content by removing unwanted elements and formatting the text.
 
-def split_dom_content(dom_content, max_length=6000):
-    return [
-        dom_content[i : i + max_length] for i in range(0, len(dom_content), max_length)
-    ]
+    Args:
+        body_content (str): The HTML body content to clean.
+
+    Returns:
+        str: The cleaned body content as a string.
+    """
+
+    soup = BeautifulSoup(body_content, "html.parser")
+    for element in soup(["script", "style", "nav", "footer", "header"]):
+        element.decompose()
+    text = soup.get_text(separator="\n")
+    lines = (line.strip() for line in text.splitlines())
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    text = "\n".join(chunk for chunk in chunks if chunk)
+    return text
