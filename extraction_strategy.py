@@ -20,16 +20,16 @@ class ExtractionStrategy(ABC):
 
 class LLMExtractionStrategy(ExtractionStrategy):
     def __init__(self, instruction, model_name="llama3.2"):
-    """
-    Initializes the LLMExtractionStrategy with the provided instruction
-    and model name.
-
-    Args:
-        instruction (str): The instructions to be followed for extracting
-            information from content.
-        model_name (str, optional): The name of the LLM model to be used.
-            Defaults to "llama2".
-    """
+        """
+        Initializes the LLMExtractionStrategy with the provided instruction
+        and model name.
+    
+        Args:
+            instruction (str): The instructions to be followed for extracting
+                information from content.
+            model_name (str, optional): The name of the LLM model to be used.
+                Defaults to "llama3.2".
+        """
         self.instruction = instruction
         self.model_name = model_name
         self.template = (
