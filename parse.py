@@ -1,24 +1,30 @@
-from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
-template = (
-    "You are tasked with extracting specific information from the following text content: {dom_content}. "
-    "Please follow these instructions carefully: \n\n"
-    "1. **Extract Information:** Only extract the information that directly matches the provided description: {parse_description}. "
-    "2. **No Extra Content:** Do not include any additional text, comments, or explanations in your response. "
-    "3. **Empty Response:** If no information matches the description, return an empty string ('')."
-    "4. **Direct Data Only:** Your output should contain only the data that is explicitly requested, with no other text."
-)
+from bs4 import BeautifulSoup
+import json
 
-model = OllamaLLM(model="llama3.1", temperature=0.0, top_k=10, top_p=0.95)
+class Parser:
+    @staticmethod 
+    def parse_html(html_content, parser="html.parser"):
+        """Parse HTML content using BeautifulSoup"""
+        return BeautifulSoup(html_content, parser)
+    
+    @staticmethod
+    def extract_text(soup, selector):
+        """Extract text from elements matching CSS selector"""
+        elements = soup.select(selector)
+        return [element.get_text(strip=True) for element in elements]
+    
+    @staticmethod
+    def extract_links(soup, selector): 
+        """Extract links from elements matching CSS selector"""
+        elements = soup.select(selector)
+        return [element.get('href') for element in elements if element.get('href')]
 
-def parse_with_ollama(dom_chunks, parse_description):
-    prompt = ChatPromptTemplate.from_template(template)
-    chain = prompt | model
-    parsed_results = []
-    for i, chunk in enumerate(dom_chunks, start=1):
-        response = chain.invoke(
-            {"dom_content": chunk, "parse_description": parse_description}
-        )
-        print(f"Parsed batch: {i} of {len(dom_chunks)}")
-        parsed_results.append(response)
-    return "\n".join(parsed_results)
+    @staticmethod
+    def parse_json_content(extracted_content):
+        """Parse JSON content from extracted text"""
+        try:
+            if isinstance(extracted_content, str):
+                return json.loads(extracted_content)
+            return extracted_content
+        except json.JSONDecodeError:
+            return None
