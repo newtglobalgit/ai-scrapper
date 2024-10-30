@@ -1,9 +1,6 @@
-aiohttp 
 streamlit 
-langchain 
+pandas
+polars
+aiohttp 
+bs4
 langchain_ollama
-selenium
-beautifulsoup4
-lxml 
-html5lib
-python-dotenv
