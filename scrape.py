@@ -5,15 +5,15 @@ import random
 
 class AsyncWebCrawler:
     def __init__(self, verbose=False):
-"""
-Initialize the AsyncWebCrawler instance.
-
-Args:
-    verbose (bool): If True, enables verbose output for debugging. Defaults to False.
-
-Attributes:
-    headers (dict): HTTP headers to be used for the requests, including a User-Agent.
-"""
+        """
+        Initialize the AsyncWebCrawler instance.
+        
+        Args:
+            verbose (bool): If True, enables verbose output for debugging. Defaults to False.
+        
+        Attributes:
+            headers (dict): HTTP headers to be used for the requests, including a User-Agent.
+        """
         self.verbose = verbose
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
