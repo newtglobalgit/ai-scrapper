@@ -52,9 +52,9 @@ class WebSearcher:
                     soup = BeautifulSoup(html, 'html.parser')
                     
                     if engine == "google":
-                        results = soup.select('.yuRUbf > a')
+                        results = soup.select('div.b_title > h2 > a, div.b_algo h2 > a')
                     else:
-                        results = soup.select('h2 > a')
+                        results = soup.select('div.b_title > h2 > a, div.b_algo h2 > a')
                         
                     urls = []
                     for result in results[:num_results]:
@@ -75,7 +75,10 @@ async def process_urls(urls: List[str], extraction_instruction: str, use_llm: bo
         for url in urls:
             try:
                 with st.spinner(f'Processing {url}...'):
-                    result = await crawler.arun(url, strategy)
+                    result = await asyncio.wait_for(
+                        crawler.arun(url, strategy),
+                        timeout=300
+                    )
                     if result.extracted_content:
                         results.append({
                             'URL': url,

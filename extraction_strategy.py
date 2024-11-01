@@ -41,7 +41,7 @@ class LLMExtractionStrategy(ExtractionStrategy):
         )
         self.llm = OllamaLLM(
             model=model_name,
-            temperature=0.0
+            temperature=0.7
         )
         
     async def extract(self, content):
